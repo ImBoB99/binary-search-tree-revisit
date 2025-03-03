@@ -196,7 +196,7 @@ class Tree {
     }
   }
 
-  // left -> root -> right
+  // left -> root -> right // ALWAYS gives a sorted result!
   inOrder(callback) {
     let node = this.root;
 
@@ -240,12 +240,107 @@ class Tree {
     }
   }
 
+  // from a node to longest leaf
   height(node) {
-    // to do
+    if (node === null) {
+      return -1;
+    }
+
+    let height = -1;
+    let queue = [];
+
+    // the node that is picked acts as root
+    queue.push(node);
+
+    while (queue.length !== 0) {
+      let heightLevel = queue.length;
+
+      for (let i = 0; i < heightLevel; i++) {
+        node = queue[0];
+
+        if (node.left !== null) {
+          queue.push(node.left);
+        }
+
+        if (node.right !== null) {
+          queue.push(node.right);
+        }
+        queue.splice(0, 1);
+      }
+
+      height++;
+    }
+    return height;
   }
-  
+
+  //from root to node
   depth(node) {
-    // to do
+    let root = this.root;
+    let depth = 0;
+
+    // If tree is empty or node is null
+    if (!root || !node) return -1;
+
+    while (root) {
+        if (node.data < root.data) {
+            root = root.left;
+            depth++;
+        } else if (node.data > root.data) {
+            root = root.right;
+            depth++;
+        } else {
+            return depth; // Node found, return depth
+        }
+    }
+
+    return -1; // Node not found in the tree
+  }
+
+  // check balancing by getting height of each root's children node
+  isBalanced() {
+    let node = this.root;
+    let queue = [];
+
+    if (!node) return true;
+
+    queue.push(node);
+
+    while(queue.length !== 0) {
+      let heightLevel = queue.length;
+
+      for (let i = 0; i < heightLevel; i++) {
+        node = queue[0]
+
+        let leftHeight = this.height(node.left);
+        let rightHeight = this.height(node.right);
+
+        // if height val of left child - right child is bigger than 1, the tree is unbalanced
+        if (Math.abs(leftHeight - rightHeight) > 1) return false;
+
+        // enqueue the children, if any
+        if (node.left !== null) {
+          queue.push(node.left);
+        }
+
+        if (node.right !== null) {
+          queue.push(node.right);
+        }
+
+        queue.splice(0, 1)
+      }
+    }
+
+    return true;
+  }
+
+  // grab values of every node, put them into an array and call buildTree func
+  rebalance() {
+    let array = [];
+    this.inOrder(node => array.push(node.data))
+    console.table(array)
+    // make sure data is unique (data is already sorted from inorder)
+    let uniqueArray = [...new Set(array)];
+    this.root = buildTree(uniqueArray, 0, uniqueArray.length - 1);
   }
 }
 
@@ -285,4 +380,13 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
 const tree = new Tree([50, 20, 30, 40, 32, 34, 36, 70, 60, 65, 80, 75, 85]);
 
 prettyPrint(tree.root);
-tree.postOrder(printDataCallback);
+tree.inOrder(printDataCallback)
+console.log(tree.isBalanced())
+tree.rebalance()
+tree.insert(90);
+tree.insert(95);
+tree.insert(100);
+console.log(tree.isBalanced())
+tree.rebalance()
+console.log(tree.isBalanced())
+prettyPrint(tree.root);
